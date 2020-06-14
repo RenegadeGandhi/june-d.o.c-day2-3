@@ -112,10 +112,6 @@ app.post('/newuser', (req, res, next) => {
 
 
 app.use((req, res, next) => {
-    res.status(302).send(`Invalid request, goto /users`);
-});
-
-app.use((req, res, next) => {
     fetch('http://jsonplaceholder.typicode.com/users')
     .then(res => res.json())
     .then(json => {
