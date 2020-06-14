@@ -11,32 +11,6 @@ app.use(bodyParser.json())
 
 
 
-
-
-app.get('/', (req, res, next) => {
-    fetch('http://jsonplaceholder.typicode.com/users')
-    .then(res => res.json())
-    .then(json => {
-        let arr = [];
-        for (let i = 0; i < json.length; i++) {
-            let users = {
-                id: json[i].id,
-                name: json[i].name,
-                username: json[i].username,
-                email: json[i].email,
-            }
-            arr.push(users);
-
-            stringUsers = JSON.stringify(arr, null, 2);
-            fs.writeFile('./users.json', stringUsers, function (err) {
-                if (err) throw err;
-            });
-        }
-        return res.send("Welcome")
-    }).catch(err => err)
-});
-
-
 app.get('/users', (req, res, next) => {
     fs.readFile('./users.json', function(err, data) {
         res.write(data);
@@ -105,27 +79,63 @@ app.get('/deleteall', (req, res, next) => {
     });
 });
 
-app.get('/newuser', (req, res, next) => {
+app.post('/newuser', (req, res, next) => {
     fs.readFile('./users.json', 'utf8', function(err, data) {
         let newuser = JSON.parse(data);
 
-        /*const newId = (newuser) => {
+        const newId = () => {
             if (newuser.length > 0) {
-                return array[array.length - 1].id + 1
+                return newuser[newuser.length - 1].id + 1;
             } else {
-                return 1
+                return 1;
             }
-        }*/
-
-        /*const { name, email, username } = req.body
-        if
-        newuser.push(req.body);
-        res.send(newerData);*/
+        }
+        try {
+            const newUser = {
+                id: newId(),
+                name: req.body.name,
+                email: req.body.email,
+                username: req.body.username
+            }
+    
+            if (!newUser.name || !newUser.email || !newUser.username) {
+                res.send("insert details")
+            } else {
+                newuser.push(newUser);
+                res.send(newuser);
+            }
+        } catch (err) {
+            console.log(err)
+        }
     });
 });
 
+
 app.use((req, res, next) => {
-    res.status(302).send(`Head over to /users`);
+    res.status(302).send(`Invalid request, goto /users`);
+});
+
+app.use((req, res, next) => {
+    fetch('http://jsonplaceholder.typicode.com/users')
+    .then(res => res.json())
+    .then(json => {
+        let arr = [];
+        for (let i = 0; i < json.length; i++) {
+            let users = {
+                id: json[i].id,
+                name: json[i].name,
+                username: json[i].username,
+                email: json[i].email,
+            }
+            arr.push(users);
+
+            stringUsers = JSON.stringify(arr, null, 2);
+            fs.writeFile('./users.json', stringUsers, function (err) {
+                if (err) throw err;
+            });
+        }
+        return res.send("Welcome, head over to /users")
+    }).catch(err => err)
 });
 
 app.listen(port, () => {
